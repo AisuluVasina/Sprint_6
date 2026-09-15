@@ -1,0 +1,1 @@
+{"uuid": "d4f4b33a-2984-451c-9df4-50f6630ff912", "befores": [{"name": "delivery_date", "status": "passed", "start": 1789500190231, "stop": 1789500190231}], "afters": [{"name": "delivery_date::<lambda>", "start": 1789500192131}], "start": 1789500190231, "stop": 1789500192131}

@@ -32,8 +32,8 @@ class OrderPageLocators:
     METRO_INPUT = (By.XPATH, "//input[@placeholder='* Станция метро']")
     
     # Выпадающий список станций 
-    METRO_OPTION = (By.XPATH, "//div[@class='select-search__option' and contains(text(), '{}')]")  # подставляем имя
-    METRO_OPTIONS_CONTAINER = (By.CLASS_NAME, "select-search__options")
+    METRO_OPTION = (By.XPATH, "//div[@class='select-search__input' and contains(text(), '{}')]")  # подставляем имя
+    METRO_OPTIONS_CONTAINER = (By.CLASS_NAME, "select-search__input")
 
     PHONE_FIELD = (By.XPATH, "//input[@placeholder='* Телефон: на него позвонит курьер']")
     NEXT_BTN = (By.XPATH, "//button[text()='Далее']")
@@ -55,7 +55,7 @@ class OrderPageLocators:
     LOGO_YANDEX = (By.XPATH, "//img[@alt='Yandex']")
     
     # --- ДЗЕН (для проверки открытия) ---
-    DZEN_NEWS_BLOCK = (By.CSS_SELECTOR, ".news-feed") # Пример селектора, замените на актуальный, если есть
+    DZEN_NEWS_BLOCK = (By.CSS_SELECTOR, ".news-feed")
 
     @staticmethod
     def station_locator(station: str):

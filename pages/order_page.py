@@ -5,36 +5,15 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 import time
 from locators import OrderPageLocators 
+from pages.base_page import BasePage
 
 
-class OrderPage:
+class OrderPage(BasePage):
+    @allure.step("Инициализация страницы заказа")
     def __init__(self, driver, url):
-        self.driver = driver
-        self.url = url
-        self.wait = WebDriverWait(driver, 20)
+        super().__init__(driver, url)  
 
-    def open(self):
-        self.driver.get(self.url)
-
-    def input_text(self, locator, text):
-        #Ввод текста в поле с ожиданием видимости и очисткой
-        element = self.wait.until(EC.visibility_of_element_located(locator))
-        element.clear()
-        element.send_keys(text)
-
-    def click_element(self, locator):
-        #Клик по элементу с ожиданием кликабельности
-        element = self.wait.until(EC.element_to_be_clickable(locator))
-        element.click()
-
-    def find_status_button(self):
-        #Проверка наличия кнопки статуса
-        try:
-            self.wait.until(EC.visibility_of_element_located(OrderPageLocators.STATUS_BTN))
-            return True
-        except:
-            return False
-
+    @allure.step("Заполнение формы заказа самоката")
     def order_scooter(self, first_name, last_name, address, metro_station, phone, delivery_date, rental_period):
         with allure.step("Шаг 1: Заполнение личных данных"):
             self.input_text(OrderPageLocators.NAME_INPUT, first_name)
@@ -42,9 +21,24 @@ class OrderPage:
             self.input_text(OrderPageLocators.ADDRESS_INPUT, address)
             
             # Выбор станции метро
-            self.input_text(OrderPageLocators.METRO_INPUT, metro_station)
-            option_locator = OrderPageLocators.station_locator(metro_station)
-            self.click_element(option_locator)
+            metro_input = self.wait.until(EC.visibility_of_element_located(OrderPageLocators.METRO_INPUT))
+            metro_input.click()
+            metro_input.clear()
+            metro_input.send_keys(metro_station)
+
+            try:
+                # Ждем, пока появится блок с опциями
+                self.wait.until(EC.visibility_of_element_located(OrderPageLocators.METRO_OPTIONS_CONTAINER))
+                option_locator = OrderPageLocators.station_locator(metro_station)
+                option_element = self.wait.until(EC.element_to_be_clickable(option_locator))
+
+                option_element.click()
+            
+            except TimeoutException:
+                self.driver.save_screenshot(f"debug_metro_fail_{station_name}.png")
+                print(f"Ошибка: Не удалось найти станцию '{station_name}' в выпадающем списке.")
+                print("Проверьте: совпадает ли текст в списке (например, 'ВДНХ (линия)') с тем, что вы передаете.")
+                raise
             
             self.input_text(OrderPageLocators.PHONE_FIELD, phone)
 
@@ -56,7 +50,6 @@ class OrderPage:
             date_field = self.wait.until(EC.visibility_of_element_located(OrderPageLocators.DATE_INPUT))
             date_field.clear()
             date_field.send_keys(delivery_date)
-            time.sleep(0.5)  # Даём время календарю отреагировать
 
             # Закрываем календарь, чтобы он не мешал
             self.click_element(OrderPageLocators.ORDER_TITLE)
@@ -70,19 +63,25 @@ class OrderPage:
             # Нажимаем "Заказать"
             self.click_element(OrderPageLocators.ORDER_BTN_PAGE)
 
-            # Подтверждение заказа, если появилось модальное окно
+            # Подтверждение заказа
             try:
-                confirm_btn = self.wait.until(EC.element_to_be_clickable(OrderPageLocators.CONFIRM_BTN_MODAL))
                 with allure.step("Подтверждение заказа в модальном окне"):
-                    confirm_btn.click()
+                    self.click_element(OrderPageLocators.CONFIRM_BTN_MODAL)
             except:
                 pass  # Модальное окно может не появиться
 
+    @allure.step("Клик по логотипу Самоката")
     def click_logo_self(self):
-        with allure.step("Клик по логотипу Самоката"):
-            self.click_element(OrderPageLocators.LOGO_SELF)
+        self.click_element(OrderPageLocators.LOGO_SELF)
 
+    @allure.step("Клик по логотипу Яндекса")
     def click_logo_yandex(self):
-        with allure.step("Клик по логотипу Яндекса"):
-            self.click_element(OrderPageLocators.LOGO_YANDEX)
+        self.click_element(OrderPageLocators.LOGO_YANDEX)
 
+    @allure.step("Проверка наличия кнопки статуса заказа")
+    def find_status_button(self):
+        try:
+            self.wait_for_visibility(OrderPageLocators.STATUS_BTN, timeout=10)
+            return True
+        except:
+            return False

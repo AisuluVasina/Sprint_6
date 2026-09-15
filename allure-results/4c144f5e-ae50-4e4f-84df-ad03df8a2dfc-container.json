@@ -1,0 +1,1 @@
+{"uuid": "a2360129-7d48-415f-b3e3-15901e35b2f7", "befores": [{"name": "rental_period", "status": "passed", "start": 1789404435525, "stop": 1789404435525}], "afters": [{"name": "rental_period::<lambda>", "start": 1789404445660}], "start": 1789404435525, "stop": 1789404445660}

@@ -7,14 +7,17 @@ from locators import MainPageLocators
 from pages.base_page import BasePage
 
 class MainPage(BasePage):
+    @allure.step("Инициализация главной страницы")
     def __init__(self, driver, url):
         super().__init__(driver, url)  
 
+    @allure.step("Открыть страницу и закрыть попап с куками")
     def open_and_close_cookies(self):
         """Открывает главную страницу и закрывает попап с куками"""
         self.open()  # открыть страницу
         self.accept_cookies()  # закрыть куки
 
+    @allure.step("Принять куки")
     def accept_cookies(self):
         self.click_element(MainPageLocators.COOKIE_BTN)
 
@@ -23,6 +26,7 @@ class MainPage(BasePage):
         """Кликаем по верхней кнопке 'Заказать'"""
         self.click_element(MainPageLocators.BTN_ORDER_TOP)
 
+    @allure.step("Клик по нижней кнопке заказа")
     def click_bottom_order_btn(self):
         """Кликаем по нижней кнопке 'Заказать'"""
         self.click_element(MainPageLocators.BTN_ORDER_BOTTOM)
@@ -32,42 +36,31 @@ class MainPage(BasePage):
         """Кликаем по логотипу 'Самокат'"""
         self.click_element(MainPageLocators.LOGO_SELF)
 
+    @allure.step("Клик по логотипу Яндекс")
     def click_to_yandex_logo(self):
         """Кликаем по логотипу 'Яндекс'"""
         self.click_element(MainPageLocators.LOGO_YANDEX)
 
     @allure.step("Раскрыть вопрос №{index}")
     def expand_accordion_item(self, index):
-        # Формируем локатор для конкретного заголовка
+        """Раскрывает вопрос аккордеона по индексу"""
         header_locator = (By.XPATH, MainPageLocators.ACCORDION_HEADER_TEMPLATE.format(index))
-        
-        wait = WebDriverWait(self.driver, 10)
-        
-        # Ждем, пока элемент станет кликабельным
-        try:
-            element = wait.until(EC.element_to_be_clickable(header_locator))
-            element.click()
-        except Exception as e:
-            raise Exception(f"Не удалось кликнуть по заголовку аккордеона №{index}: {e}")
+        self.click_element(header_locator)
 
     @allure.step("Проверить видимость ответа на вопрос №{index}")
     def is_answer_visible(self, index):
+        """Проверяет, виден ли ответ на вопрос"""
         panel_locator = (By.XPATH, MainPageLocators.ACCORDION_PANEL_TEMPLATE.format(index))
-        wait = WebDriverWait(self.driver, 10)
-        
         try:
-            # Ждем, пока панель станет видимой
-            wait.until(EC.visibility_of_element_located(panel_locator))
+            self.wait_for_visibility(panel_locator, timeout=10)
             return True
-        except Exception:
+        except:
             return False
 
     @allure.step("Получить текст ответа на вопрос №{index}")
     def get_answer_text(self, index):
+        """Получает текст ответа на вопрос из аккордеона"""
         self.expand_accordion_item(index)
-        
         panel_locator = (By.XPATH, MainPageLocators.ACCORDION_PANEL_TEMPLATE.format(index))
-        wait = WebDriverWait(self.driver, 10)
-        
-        element = wait.until(EC.visibility_of_element_located(panel_locator))
+        element = self.wait_for_visibility(panel_locator, timeout=10)
         return element.text.strip()
